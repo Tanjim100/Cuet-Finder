@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { apiEndpoints } from '../config/api';
+import { apiEndpoints } from "../config/api";
+import { useTheme } from "../App";
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("allUsers"); // State to manage active tab
@@ -138,10 +139,20 @@ const AdminPage = () => {
       post.location.toLowerCase().includes(foundPostSearchQuery.toLowerCase())
   );
 
+  const { isDark } = useTheme();
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div
+      className={`flex h-screen pt-20 ${
+        isDark ? "bg-slate-900" : "bg-gray-100"
+      }`}
+    >
       {/* Sidebar */}
-      <div className="w-64 bg-[#088178] text-white p-6">
+      <div
+        className={`w-64 p-6 ${
+          isDark ? "bg-purple-900" : "bg-[#088178]"
+        } text-white`}
+      >
         <h1 className="text-2xl font-bold mb-8">Admin Panel</h1>
         <ul className="space-y-4">
           <li>
@@ -149,7 +160,11 @@ const AdminPage = () => {
               onClick={() => setActiveTab("allUsers")}
               className={`w-full text-left p-2 rounded ${
                 activeTab === "allUsers"
-                  ? "bg-white text-[#088178]"
+                  ? isDark
+                    ? "bg-white text-purple-900"
+                    : "bg-white text-[#088178]"
+                  : isDark
+                  ? "hover:bg-white hover:text-purple-900"
                   : "hover:bg-white hover:text-[#088178]"
               }`}
             >
@@ -161,7 +176,11 @@ const AdminPage = () => {
               onClick={() => setActiveTab("allLostPosts")}
               className={`w-full text-left p-2 rounded ${
                 activeTab === "allLostPosts"
-                  ? "bg-white text-[#088178]"
+                  ? isDark
+                    ? "bg-white text-purple-900"
+                    : "bg-white text-[#088178]"
+                  : isDark
+                  ? "hover:bg-white hover:text-purple-900"
                   : "hover:bg-white hover:text-[#088178]"
               }`}
             >
@@ -173,7 +192,11 @@ const AdminPage = () => {
               onClick={() => setActiveTab("allFoundPosts")}
               className={`w-full text-left p-2 rounded ${
                 activeTab === "allFoundPosts"
-                  ? "bg-white text-[#088178]"
+                  ? isDark
+                    ? "bg-white text-purple-900"
+                    : "bg-white text-[#088178]"
+                  : isDark
+                  ? "hover:bg-white hover:text-purple-900"
                   : "hover:bg-white hover:text-[#088178]"
               }`}
             >
@@ -187,7 +210,13 @@ const AdminPage = () => {
       <div className="flex-1 p-8">
         {activeTab === "allUsers" && (
           <div>
-            <h2 className="text-3xl font-bold mb-6">All Users</h2>
+            <h2
+              className={`text-3xl font-bold mb-6 ${
+                isDark ? "text-white" : "text-gray-900"
+              }`}
+            >
+              All Users
+            </h2>
             {/* Search Bar for Users */}
             <div className="mb-6">
               <input
@@ -195,12 +224,28 @@ const AdminPage = () => {
                 placeholder="Search users by name or email..."
                 value={userSearchQuery}
                 onChange={(e) => setUserSearchQuery(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#088178]"
+                className={`w-full p-2 border rounded-lg focus:outline-none ${
+                  isDark
+                    ? "bg-slate-800 border-slate-700 text-white placeholder-gray-400 focus:border-purple-500"
+                    : "bg-white border-gray-300 focus:border-[#088178]"
+                }`}
               />
             </div>
-            <table className="w-full bg-white border border-gray-200 rounded-lg shadow">
+            <table
+              className={`w-full border rounded-lg shadow ${
+                isDark
+                  ? "bg-slate-800 border-slate-700"
+                  : "bg-white border-gray-200"
+              }`}
+            >
               <thead>
-                <tr className="bg-[#088178] text-white">
+                <tr
+                  className={
+                    isDark
+                      ? "bg-purple-900 text-white"
+                      : "bg-[#088178] text-white"
+                  }
+                >
                   <th className="p-3 text-left">Name</th>
                   <th className="p-3 text-left">Email</th>
                   <th className="p-3 text-left">Mobile</th>
@@ -211,11 +256,33 @@ const AdminPage = () => {
                 {filteredUsers.map((user) => (
                   <tr
                     key={user._id}
-                    className="border-b border-gray-200 hover:bg-gray-50"
+                    className={`border-b ${
+                      isDark
+                        ? "border-slate-700 hover:bg-slate-700"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
                   >
-                    <td className="p-3">{user.name}</td>
-                    <td className="p-3">{user.email}</td>
-                    <td className="p-3">{user.mobile}</td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {user.name}
+                    </td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {user.email}
+                    </td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {user.mobile}
+                    </td>
                     <td className="p-3">
                       <button
                         onClick={() => handleDeleteUser(user._id)}
@@ -233,7 +300,13 @@ const AdminPage = () => {
 
         {activeTab === "allLostPosts" && (
           <div>
-            <h2 className="text-3xl font-bold mb-6">All Lost Posts</h2>
+            <h2
+              className={`text-3xl font-bold mb-6 ${
+                isDark ? "text-white" : "text-gray-900"
+              }`}
+            >
+              All Lost Posts
+            </h2>
             {/* Search Bar for Lost Posts */}
             <div className="mb-6">
               <input
@@ -241,12 +314,28 @@ const AdminPage = () => {
                 placeholder="Search lost posts by item or owner..."
                 value={lostPostSearchQuery}
                 onChange={(e) => setLostPostSearchQuery(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#088178]"
+                className={`w-full p-2 border rounded-lg focus:outline-none ${
+                  isDark
+                    ? "bg-slate-800 border-slate-700 text-white placeholder-gray-400 focus:border-purple-500"
+                    : "bg-white border-gray-300 focus:border-[#088178]"
+                }`}
               />
             </div>
-            <table className="w-full bg-white border border-gray-200 rounded-lg shadow">
+            <table
+              className={`w-full border rounded-lg shadow ${
+                isDark
+                  ? "bg-slate-800 border-slate-700"
+                  : "bg-white border-gray-200"
+              }`}
+            >
               <thead>
-                <tr className="bg-[#088178] text-white">
+                <tr
+                  className={
+                    isDark
+                      ? "bg-purple-900 text-white"
+                      : "bg-[#088178] text-white"
+                  }
+                >
                   <th className="p-3 text-left">Item</th>
                   <th className="p-3 text-left">Owner</th>
                   <th className="p-3 text-left">Location</th>
@@ -257,11 +346,33 @@ const AdminPage = () => {
                 {filteredLostPosts.map((post) => (
                   <tr
                     key={post._id}
-                    className="border-b border-gray-200 hover:bg-gray-50"
+                    className={`border-b ${
+                      isDark
+                        ? "border-slate-700 hover:bg-slate-700"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
                   >
-                    <td className="p-3">{post.item}</td>
-                    <td className="p-3">{post.name}</td>
-                    <td className="p-3">{post.location}</td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {post.item}
+                    </td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {post.name}
+                    </td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {post.location}
+                    </td>
                     <td className="p-3">
                       <button
                         onClick={() => handleDeleteLostPost(post._id)}
@@ -279,7 +390,13 @@ const AdminPage = () => {
 
         {activeTab === "allFoundPosts" && (
           <div>
-            <h2 className="text-3xl font-bold mb-6">All Found Posts</h2>
+            <h2
+              className={`text-3xl font-bold mb-6 ${
+                isDark ? "text-white" : "text-gray-900"
+              }`}
+            >
+              All Found Posts
+            </h2>
             {/* Search Bar for Found Posts */}
             <div className="mb-6">
               <input
@@ -287,12 +404,28 @@ const AdminPage = () => {
                 placeholder="Search found posts by item or owner..."
                 value={foundPostSearchQuery}
                 onChange={(e) => setFoundPostSearchQuery(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#088178]"
+                className={`w-full p-2 border rounded-lg focus:outline-none ${
+                  isDark
+                    ? "bg-slate-800 border-slate-700 text-white placeholder-gray-400 focus:border-purple-500"
+                    : "bg-white border-gray-300 focus:border-[#088178]"
+                }`}
               />
             </div>
-            <table className="w-full bg-white border border-gray-200 rounded-lg shadow">
+            <table
+              className={`w-full border rounded-lg shadow ${
+                isDark
+                  ? "bg-slate-800 border-slate-700"
+                  : "bg-white border-gray-200"
+              }`}
+            >
               <thead>
-                <tr className="bg-[#088178] text-white">
+                <tr
+                  className={
+                    isDark
+                      ? "bg-purple-900 text-white"
+                      : "bg-[#088178] text-white"
+                  }
+                >
                   <th className="p-3 text-left">Item</th>
                   <th className="p-3 text-left">Owner</th>
                   <th className="p-3 text-left">Location</th>
@@ -303,11 +436,33 @@ const AdminPage = () => {
                 {filteredFoundPosts.map((post) => (
                   <tr
                     key={post._id}
-                    className="border-b border-gray-200 hover:bg-gray-50"
+                    className={`border-b ${
+                      isDark
+                        ? "border-slate-700 hover:bg-slate-700"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
                   >
-                    <td className="p-3">{post.item}</td>
-                    <td className="p-3">{post.name}</td>
-                    <td className="p-3">{post.location}</td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {post.item}
+                    </td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {post.name}
+                    </td>
+                    <td
+                      className={`p-3 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {post.location}
+                    </td>
                     <td className="p-3">
                       <button
                         onClick={() => handleDeleteFoundPost(post._id)}
