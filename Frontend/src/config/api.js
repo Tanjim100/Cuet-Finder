@@ -1,5 +1,7 @@
 // API Configuration
-export const API_BASE_URL = "http://localhost:5001";
+// Use environment variable in production, fallback to localhost for development
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 export const apiEndpoints = {
   // Auth endpoints

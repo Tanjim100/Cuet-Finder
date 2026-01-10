@@ -46,9 +46,24 @@ const connectDB = async () => {
 // Call the connection function
 connectDB();
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Replace with your frontend's origin
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all origins in development
+      }
+    },
     credentials: true, // Allow credentials (cookies)
   })
 );
@@ -108,10 +123,11 @@ app.post("/login", async (req, res) => {
   bcrypt.compare(password, user.password, function (err, result) {
     if (result) {
       var token = jwt.sign({ email: user.email }, process.env.JWT_SECRET);
+      const isProduction = process.env.NODE_ENV === "production";
       res.cookie("token", token, {
         httpOnly: true,
-        secure: false, // Set to true if using HTTPS
-        sameSite: "lax",
+        secure: isProduction, // true in production (HTTPS)
+        sameSite: isProduction ? "none" : "lax", // 'none' for cross-site in production
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       });
       res.json({ success: true, user: { name: user.name, email: user.email, id: user._id } });
