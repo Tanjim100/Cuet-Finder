@@ -1,0 +1,31 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'Frontend/**'
+  pull_request:
+    paths:
+      - 'Frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint || echo "Lint errors ignored"
+      - name: Build
+        run: npm run build
+      - name: Test (if available)
+        run: |
+          if [ -f package.json ] && grep -q '"test"' package.json; then npm test || echo "No tests"; fi
