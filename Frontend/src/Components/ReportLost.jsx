@@ -64,34 +64,86 @@ const ReportLost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate all required fields
+    if (!form.name || !form.item || !form.location || !form.date || !form.description || !form.contact) {
+      alert("Please fill in all required fields");
+      return;
+    }
+    
     if (photos.length === 0) {
       alert("Please upload at least one photo");
       return;
     }
+    
     setIsLoading(true);
 
     const formData = new FormData();
-    Object.keys(form).forEach((key) => formData.append(key, form[key]));
-    photos.forEach((photo) => formData.append("photos", photo));
-    // Also add first photo as 'photo' for backward compatibility
-    if (photos.length > 0) formData.append("photo", photos[0]);
+    Object.keys(form).forEach((key) => {
+      if (form[key]) {
+        formData.append(key, form[key]);
+      }
+    });
+    
+    // Only send the first photo with the field name "photo" that multer expects
+    if (photos.length > 0) {
+      formData.append("photo", photos[0]);
+    }
 
     try {
+      console.log("Submitting report to:", apiEndpoints.reportLost);
       const response = await fetch(apiEndpoints.reportLost, {
         method: "POST",
         body: formData,
         credentials: "include",
       });
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      // Check if response is valid JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Invalid response type:", contentType);
+        console.error("Response status:", response.status);
+        const responseText = await response.text();
+        console.error("Response body:", responseText);
+        
+        if (response.status === 401) {
+          alert("Session expired. Please log in again.");
+          navigate("/login");
+        } else if (response.status === 403) {
+          alert("You don't have permission to submit reports. Please log in.");
+          navigate("/login");
+        } else {
+          alert("Server error. Please try again later.");
+        }
+        return;
+      }
+
       const data = await response.json();
+      console.log("Response data:", data);
+      
       if (response.ok) {
         alert("Report submitted successfully!");
+        setForm({
+          name: "",
+          item: "",
+          location: "",
+          date: "",
+          description: "",
+          contact: "",
+          category: "",
+        });
+        setPhotos([]);
+        setPhotoPreviews([]);
         navigate("/lost");
       } else {
-        alert(data.message || "Failed to submit report. Please log in.");
+        alert(data.message || "Failed to submit report. Please try again.");
       }
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("An error occurred. Please try again.");
+      alert("An error occurred. Please check your internet connection and try again.");
     } finally {
       setIsLoading(false);
     }

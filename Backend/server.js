@@ -74,6 +74,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Middleware to check if the user is logged in
 const authenticateUser = (req, res, next) => {
   const token = req.cookies.token; // Get the token from cookies
+  
+  console.log("Authentication check - Cookies:", req.cookies);
+  console.log("Authentication check - Token:", token ? "Present" : "Missing");
 
   if (!token) {
     return res
@@ -86,6 +89,7 @@ const authenticateUser = (req, res, next) => {
     req.user = decoded; 
     next();
   } catch (error) {
+    console.error("Token verification error:", error.message);
     return res
       .status(401)
       .json({ success: false, message: "Unauthorized: Invalid token" });
@@ -175,23 +179,41 @@ app.post(
   authenticateUser,
   upload.single("photo"),
   async (req, res) => {
-    const token = req.cookies.token;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    let user = await userlist.findOne({ email: decoded.email });
-
-    const { name, item, location, date, description, contact } = req.body;
-
-    // Determine the photo path
-    let photo;
-    if (req.file) {
-      photo = `uploads/${req.file.filename}`; // Prioritize file upload
-    } else {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please provide either an image." });
-    }
-
     try {
+      console.log("Report Lost - Request body:", req.body);
+      console.log("Report Lost - File:", req.file);
+      
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      let user = await userlist.findOne({ email: decoded.email });
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      const { name, item, location, date, description, contact, category } = req.body;
+
+      // Validate required fields
+      if (!name || !item || !location || !date || !description || !contact) {
+        console.error("Missing required fields:", { name, item, location, date, description, contact });
+        return res.status(400).json({ 
+          success: false, 
+          message: "All fields (name, item, location, date, description, contact) are required." 
+        });
+      }
+
+      // Determine the photo path
+      let photo;
+      if (req.file) {
+        photo = `uploads/${req.file.filename}`; // Prioritize file upload
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, message: "Please provide an image." });
+      }
+
+      console.log("Creating report lost with data:", { name, item, location, date, description, photo, contact, category, userId: user._id });
+
       let product = await reportlost.create({
         name,
         item,
@@ -199,18 +221,26 @@ app.post(
         date,
         description,
         photo,
-        contact, // Save the photo path or URL in the database
+        contact,
+        category: category || "Other",
         user: user._id, // Associate the post with the user
       });
 
-      // Add the post to the user's reportLostPosts array
+      console.log("Report created:", product._id);
+
+      // Initialize reportLostPosts if it doesn't exist and add the post
+      if (!user.reportLostPosts) {
+        user.reportLostPosts = [];
+      }
       user.reportLostPosts.push(product._id);
       await user.save();
+
+      console.log("User updated with report ID:", product._id);
 
       res.json({ success: true, product });
     } catch (error) {
       console.error("Error saving product:", error);
-      res.status(500).json({ success: false, message: "Server error" });
+      res.status(500).json({ success: false, message: "Server error: " + error.message });
     }
   }
 );
@@ -247,23 +277,35 @@ app.post(
   authenticateUser,
   upload.single("photo"),
   async (req, res) => {
-    const token = req.cookies.token;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userlist.findOne({ email: decoded.email });
-
-    const { name, item, location, date, description, contact } = req.body;
-
-    // Determine the photo path
-    let photo;
-    if (req.file) {
-      photo = `uploads/${req.file.filename}`; // Prioritize file upload
-    } else {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please provide either an image." });
-    }
-
     try {
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await userlist.findOne({ email: decoded.email });
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      const { name, item, location, date, description, contact, category } = req.body;
+
+      // Validate required fields
+      if (!name || !item || !location || !date || !description || !contact) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "All fields (name, item, location, date, description, contact) are required." 
+        });
+      }
+
+      // Determine the photo path
+      let photo;
+      if (req.file) {
+        photo = `uploads/${req.file.filename}`; // Prioritize file upload
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, message: "Please provide an image." });
+      }
+
       let product = await postfound.create({
         name,
         item,
@@ -272,17 +314,21 @@ app.post(
         description,
         photo,
         contact,
+        category: category || "Other",
         user: user._id, // Associate the post with the user
       });
 
-      // Add the post to the user's postFoundPosts array
+      // Initialize postFoundPosts if it doesn't exist and add the post
+      if (!user.postFoundPosts) {
+        user.postFoundPosts = [];
+      }
       user.postFoundPosts.push(product._id);
       await user.save();
 
       res.json({ success: true, product });
     } catch (error) {
       console.error("Error saving product:", error);
-      res.status(500).json({ success: false, message: "Server error" });
+      res.status(500).json({ success: false, message: "Server error: " + error.message });
     }
   }
 );
